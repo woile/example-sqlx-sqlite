@@ -1,0 +1,8 @@
+#!/bin/sh -e
+#
+# usage
+# ./scripts/migrations/new {migration_name}
+#
+ARGS="$*"
+
+sqlx migrate add -r "$ARGS"
