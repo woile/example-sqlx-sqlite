@@ -1,7 +1,8 @@
 // #[macro_use]
-use anyhow::Result;
 use chrono::prelude::*;
 use sqlx::{FromRow, SqlitePool};
+use std::error;
+// use tokio::time::error;
 
 #[derive(FromRow, Debug)]
 pub struct User {
@@ -22,7 +23,8 @@ pub struct NewUser {
     full_name: String,
 
 }
-async fn insert_user(user: NewUser, pool: &SqlitePool) -> Result<User> {
+
+async fn insert_user(user: NewUser, pool: &SqlitePool) -> Result<User, sqlx::Error> {
     let uuid = uuid::Uuid::new_v4();
     let now = Utc::now().to_rfc3339();
     let last_login: Option<String> = None;
@@ -45,11 +47,10 @@ async fn insert_user(user: NewUser, pool: &SqlitePool) -> Result<User> {
     .fetch_one(pool)
     .await?;
     Ok(user)
-
 }
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> Result<(), Box<dyn error::Error>> {
     let pool = SqlitePool::connect("sqlite://test.db")
         .await
         .expect("Could not connect to sqlite db");
@@ -61,6 +62,5 @@ async fn main() -> Result<()> {
     };
     let user = insert_user(user, &pool).await.expect("Failed to create user");
     println!("User {:?} inserted", user);
-
     Ok(())
 }
