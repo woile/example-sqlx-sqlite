@@ -25,26 +25,25 @@ pub struct NewUser {
 }
 
 async fn insert_user(user: NewUser, pool: &SqlitePool) -> Result<User, sqlx::Error> {
+    let mut conn = pool.acquire().await?;
     let uuid = uuid::Uuid::new_v4();
     let now = Utc::now().to_rfc3339();
     let last_login: Option<String> = None;
-    let user = sqlx::query_as!(
-        User,
+    let user = sqlx::query_as::<_, User>(
         r#"
         INSERT INTO users__users (uuid, username, password_hash, email, full_name, is_active, date_joined, last_login)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING *
-        "#,
-        uuid,
-        user.username,
-        user.password,
-        user.email,
-        user.full_name,
-        false,
-        now,
-        last_login
-    )
-    .fetch_one(pool)
+        "#)
+        .bind(uuid)
+        .bind(user.username)
+        .bind(user.password)
+        .bind(user.email)
+        .bind(user.full_name)
+        .bind(false)
+        .bind(now)
+        .bind(last_login)
+    .fetch_one(&mut conn)
     .await?;
     Ok(user)
 }
