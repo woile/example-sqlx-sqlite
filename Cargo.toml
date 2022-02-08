@@ -6,6 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 chrono = "0.4.19"
+fake = "2.4"
+rand = "0.8"
 sqlx = { version = "0.5.10", features = [
     "sqlite",
     "migrate",
